@@ -1,0 +1,40 @@
+name: Extension checks
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        vscode: ['1.137.0', stable]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run test:unit
+      - if: runner.os == 'Linux'
+        run: xvfb-run -a npm test -- --code-version ${{ matrix.vscode }}
+      - if: runner.os != 'Linux'
+        run: npm test -- --code-version ${{ matrix.vscode }}
+      - run: npm run package:vsix
+      - run: npm run check:package
+      - if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:vsix
+        env:
+          VSCODE_VERSION: ${{ matrix.vscode }}
+      - if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:trust
+        env:
+          VSCODE_VERSION: ${{ matrix.vscode }}

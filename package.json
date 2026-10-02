@@ -1,0 +1,455 @@
+{
+  "name": "latex-suite",
+  "displayName": "LaTeX Suite",
+  "description": "Fast LaTeX typing shortcuts for Markdown and LaTeX, ported from Obsidian LaTeX Suite.",
+  "version": "1.0.0",
+  "publisher": "latex-suite-port",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "icon": "assets/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nicswansonwaterloo/latexsuiteport.git"
+  },
+  "homepage": "https://github.com/Nicswansonwaterloo/latexsuiteport#readme",
+  "bugs": {
+    "url": "https://github.com/Nicswansonwaterloo/latexsuiteport/issues"
+  },
+  "galleryBanner": {
+    "color": "#ffffff",
+    "theme": "light"
+  },
+  "engines": {
+    "vscode": "^1.137.0",
+    "node": ">=24"
+  },
+  "categories": [
+    "Snippets",
+    "Other"
+  ],
+  "keywords": [
+    "latex",
+    "markdown",
+    "math",
+    "snippets",
+    "obsidian"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown",
+    "onLanguage:latex"
+  ],
+  "main": "./dist/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Built-in snippets remain available. Custom snippet source and files are disabled because snippet files execute JavaScript.",
+      "restrictedConfigurations": [
+        "latexSuite.snippets.source",
+        "latexSuite.snippets.files",
+        "latexSuite.snippets.variablesSource",
+        "latexSuite.snippets.variableFiles"
+      ]
+    },
+    "virtualWorkspaces": {
+      "supported": true,
+      "description": "Built-in and self-contained snippets work in virtual workspaces. Relative Node.js imports from virtual snippet files are not supported."
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "latexSuite.addSnippetFile",
+        "category": "LaTeX Suite",
+        "title": "Add Snippet File\u2026"
+      },
+      {
+        "command": "latexSuite.addVariableFile",
+        "category": "LaTeX Suite",
+        "title": "Add Variable File\u2026"
+      },
+      {
+        "command": "latexSuite.expandSnippet",
+        "category": "LaTeX Suite",
+        "title": "Expand Snippet"
+      },
+      {
+        "command": "latexSuite.expandSnippetByKey",
+        "category": "LaTeX Suite",
+        "title": "Expand Snippet by Trigger Key"
+      },
+      {
+        "command": "latexSuite.autoFraction",
+        "category": "LaTeX Suite",
+        "title": "Insert Auto-fraction"
+      },
+      {
+        "command": "latexSuite.nextBracketOrEquation",
+        "category": "LaTeX Suite",
+        "title": "Move to Next Bracket or Exit Equation"
+      },
+      {
+        "command": "latexSuite.matrixCell",
+        "category": "LaTeX Suite",
+        "title": "Add Matrix Cell"
+      },
+      {
+        "command": "latexSuite.matrixNewline",
+        "category": "LaTeX Suite",
+        "title": "Add Matrix Row"
+      },
+      {
+        "command": "latexSuite.matrixExit",
+        "category": "LaTeX Suite",
+        "title": "Exit Matrix"
+      },
+      {
+        "command": "latexSuite.reloadSnippets",
+        "category": "LaTeX Suite",
+        "title": "Reload Snippets"
+      },
+      {
+        "command": "latexSuite.toggleEnabled",
+        "category": "LaTeX Suite",
+        "title": "Toggle Typing Shortcuts"
+      },
+      {
+        "command": "latexSuite.openSettings",
+        "category": "LaTeX Suite",
+        "title": "Open Settings"
+      },
+      {
+        "command": "latexSuite.tab",
+        "category": "LaTeX Suite",
+        "title": "Contextual Tab"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "latexSuite.tab",
+          "when": "false"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "latexSuite.tab",
+        "key": "tab",
+        "when": "editorTextFocus && !editorReadonly && !editorHasSelection && !editorHasMultipleSelections && !inSnippetMode && !suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible && !renameInputVisible && !editorTabMovesFocus && config.editor.tabCompletion == off && config.latexSuite.enabled && (editorLangId == markdown || editorLangId == latex)"
+      },
+      {
+        "command": "latexSuite.internal.matrixNewline",
+        "key": "enter",
+        "when": "editorTextFocus && !editorReadonly && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible && !renameInputVisible && latexSuite.inMatrix && config.latexSuite.enabled && config.latexSuite.matrixShortcuts.enabled && (editorLangId == markdown || editorLangId == latex)"
+      },
+      {
+        "command": "latexSuite.internal.matrixExit",
+        "key": "shift+enter",
+        "when": "editorTextFocus && !editorReadonly && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inlineSuggestionVisible && !inlineEditIsVisible && !renameInputVisible && latexSuite.inMatrix && config.latexSuite.enabled && config.latexSuite.matrixShortcuts.enabled && (editorLangId == markdown || editorLangId == latex)"
+      }
+    ],
+    "configuration": {
+      "title": "LaTeX Suite",
+      "properties": {
+        "latexSuite.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "order": 1,
+          "description": "Enable LaTeX Suite typing shortcuts for Markdown and LaTeX documents."
+        },
+        "latexSuite.snippets.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "order": 10,
+          "description": "Enable automatic and manual snippet expansion."
+        },
+        "latexSuite.snippets.files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "scope": "resource",
+          "order": 12,
+          "description": "JavaScript snippet files or directories. Configured sources replace bundled snippets. Relative paths resolve from the current workspace folder. Files use the upstream format and execute as JavaScript."
+        },
+        "latexSuite.snippets.source": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "order": 13,
+          "editPresentation": "multilineText",
+          "description": "Inline JavaScript snippet source in the upstream format. Configured sources replace bundled snippets; use [] for an empty collection. Prefer snippet files for larger configurations."
+        },
+        "latexSuite.snippets.variableFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "scope": "resource",
+          "order": 14,
+          "description": "JavaScript files exporting snippet-variable objects. Relative paths resolve from the current workspace folder."
+        },
+        "latexSuite.snippets.variablesSource": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "order": 15,
+          "editPresentation": "multilineText",
+          "description": "Inline JavaScript object containing snippet variables in the upstream format."
+        },
+        "latexSuite.snippets.recursionLimit": {
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 10,
+          "scope": "resource",
+          "order": 16,
+          "description": "Additional automatic-expansion passes after the first expansion."
+        },
+        "latexSuite.snippets.wordDelimiters": {
+          "type": "string",
+          "default": "., +-\\n\\t:;!?\\/{}[]()=~$'\"|`<>*^%#@&",
+          "scope": "resource",
+          "order": 17,
+          "description": "Characters accepted around snippets with the w (word-boundary) option. Use \\n and \\t for newline and tab."
+        },
+        "latexSuite.snippets.removeTrailingWhitespace": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "order": 18,
+          "description": "Trim trailing whitespace from replacements in inline math."
+        },
+        "latexSuite.forceMathLanguages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "math"
+          ],
+          "scope": "resource",
+          "order": 20,
+          "description": "Markdown fenced-code language names treated as display math."
+        },
+        "latexSuite.autoFraction.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "order": 30,
+          "description": "Typing / in math converts the preceding expression or selection to a fraction."
+        },
+        "latexSuite.autoFraction.symbol": {
+          "type": "string",
+          "default": "\\frac",
+          "scope": "resource",
+          "order": 31,
+          "description": "LaTeX command inserted by auto-fraction."
+        },
+        "latexSuite.autoFraction.breakingCharacters": {
+          "type": "string",
+          "default": "+-=\\t",
+          "scope": "resource",
+          "order": 32,
+          "description": "Additional characters that stop the backward numerator scan."
+        },
+        "latexSuite.autoFraction.excludedRegions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "open",
+              "close"
+            ],
+            "properties": {
+              "open": {
+                "type": "string"
+              },
+              "close": {
+                "type": "string"
+              }
+            }
+          },
+          "default": [
+            {
+              "open": "^{",
+              "close": "}"
+            },
+            {
+              "open": "\\pu{",
+              "close": "}"
+            }
+          ],
+          "scope": "resource",
+          "order": 33,
+          "description": "Delimited regions where auto-fraction is disabled."
+        },
+        "latexSuite.matrixShortcuts.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "order": 40,
+          "description": "Enable Tab, Enter, and Shift+Enter matrix shortcuts."
+        },
+        "latexSuite.matrixShortcuts.environments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "pmatrix",
+            "cases",
+            "align",
+            "gather",
+            "bmatrix",
+            "Bmatrix",
+            "vmatrix",
+            "Vmatrix",
+            "array",
+            "matrix"
+          ],
+          "scope": "resource",
+          "order": 41,
+          "description": "LaTeX environments where matrix shortcuts are active."
+        },
+        "latexSuite.matrixShortcuts.macros": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "eqalign"
+          ],
+          "scope": "resource",
+          "order": 42,
+          "description": "LaTeX macros where matrix shortcuts are active."
+        },
+        "latexSuite.tabOut.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "order": 50,
+          "description": "Use Tab to move through closing delimiters and out of equations."
+        },
+        "latexSuite.tabOut.closingSymbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            ")",
+            "]",
+            "\\rbrack",
+            "\\}",
+            "\\rbrace",
+            "\\rangle",
+            "\\rvert",
+            "\\rVert",
+            "\\rfloor",
+            "\\rceil",
+            "\\urcorner",
+            "}"
+          ],
+          "scope": "resource",
+          "order": 51,
+          "description": "Closing delimiters visited by Tab navigation."
+        },
+        "latexSuite.tabOut.exitEquationOnlyAtEndOfLine": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "order": 52,
+          "description": "Exit an equation only when the remaining equation text is whitespace."
+        },
+        "latexSuite.bracketEnlargement.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "order": 60,
+          "description": "Add \\left and \\right around brackets containing configured large operators."
+        },
+        "latexSuite.bracketEnlargement.triggers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "\\sum",
+            "\\int",
+            "\\frac",
+            "\\prod",
+            "\\bigcup",
+            "\\bigcap"
+          ],
+          "scope": "resource",
+          "order": 61,
+          "description": "Replacement substrings that cause enclosing brackets to enlarge."
+        },
+        "latexSuite.bracketEnlargement.insertSpaces": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "order": 62,
+          "description": "Insert a space inside automatically enlarged brackets."
+        },
+        "latexSuite.debug": {
+          "type": "string",
+          "enum": [
+            "off",
+            "info",
+            "verbose"
+          ],
+          "default": "off",
+          "scope": "resource",
+          "order": 70,
+          "description": "Log snippet matching details to the LaTeX Suite output channel."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out && node scripts/write-test-assets.js",
+    "watch-tests": "node scripts/write-test-assets.js && npm-run-all -p watch-tests:*",
+    "pretest": "npm run compile-tests && npm run compile",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test",
+    "test:unit": "npm run compile-tests && mocha --ui tdd \"out/test/unit/**/*.test.js\"",
+    "benchmark": "npm run compile-tests && node scripts/benchmark-context.js",
+    "package:vsix": "vsce package --no-dependencies",
+    "check:package": "node scripts/check-package.js",
+    "test:vsix": "node scripts/test-vsix.js",
+    "test:trust": "node scripts/test-vsix.js --restricted",
+    "watch-tests:tsc": "tsc -p . -w --outDir out",
+    "watch-tests:assets": "node scripts/write-test-assets.js --watch"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "24.x",
+    "@types/vscode": "1.137.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
+    "@vscode/vsce": "4.0.0",
+    "acorn": "^8.18.0",
+    "esbuild": "^0.28.1",
+    "eslint": "^10.5.0",
+    "mocha": "^11.8.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1",
+    "yauzl": "^3.4.0"
+  },
+  "overrides": {
+    "diff": "^8.0.4",
+    "serialize-javascript": "^7.1.2"
+  }
+}
