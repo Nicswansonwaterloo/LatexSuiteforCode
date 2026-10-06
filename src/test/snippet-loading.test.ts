@@ -5,6 +5,7 @@ import * as path from "node:path";
 import * as vscode from "vscode";
 import { getConfig, type LatexSuiteConfig } from "../config";
 import { SnippetRepository } from "../snippetRepository";
+import { matchFirstSnippet } from "../core/snippets";
 
 suite("snippet collection selection", () => {
 	let repository: SnippetRepository;
@@ -119,6 +120,41 @@ suite("snippet collection selection", () => {
 		assert.deepEqual(customBundle.snippets.map(s => s.trigger), ["customOnly"]);
 		assert.deepEqual(customBundle.variables, defaults.variables);
 	});
+
+	for (const location of ["inline", "file"]) {
+		for (const ending of ["", ";"]) {
+			test(`loads quoted variable keys from ${location} source ending in ${JSON.stringify(ending)}`, async () => {
+				const source = `{
+					// Upstream variable files use quoted placeholder names.
+					"\${GREEK}": "alpha|beta",
+					"\${OPERATORNAMES}": "End|Hom|Aut|Mat|wt|GL|char|Pic|disc|trd"
+				}${ending}`;
+				if (location === "file") {
+					config.snippets.variableFiles = [await file("variables.js", source)];
+				} else {
+					config.snippets.variablesSource = source;
+				}
+				config.snippets.source = `[{
+					trigger: "(\${OPERATORNAMES})",
+					replacement: "\\\\operatorname{[[0]]}",
+					options: "rmA"
+				}]`;
+				const bundle = await repository.get(document, config);
+				assert.deepEqual(bundle.errors, []);
+				for (const name of bundle.variables["${OPERATORNAMES}"].split("|")) {
+					const match = matchFirstSnippet(bundle.snippets, {
+						before: `$${name}`, automatic: true,
+						mode: {
+							inlineMath: true, blockMath: false, codeMath: false,
+							text: false, codeBlock: false, code: false,
+							textEnv: false, snippetlessEnv: false,
+						},
+					});
+					assert.equal(match?.replacement.insert, `\\operatorname{${name}}`);
+				}
+			});
+		}
+	}
 
 	test("simulated trust gate: Restricted Mode uses defaults without evaluating or reading custom sources", async () => {
 		const descriptor = Object.getOwnPropertyDescriptor(vscode.workspace, "isTrusted")!;

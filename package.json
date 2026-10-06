@@ -2,7 +2,7 @@
   "name": "latex-suite",
   "displayName": "LaTeX Suite",
   "description": "Fast LaTeX typing shortcuts for Markdown and LaTeX, ported from Obsidian LaTeX Suite.",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "publisher": "latex-suite-port",
   "license": "SEE LICENSE IN LICENSE.md",
   "icon": "assets/icon.png",

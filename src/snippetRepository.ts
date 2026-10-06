@@ -239,7 +239,23 @@ export function evaluateSnippetModule(
 	const compatibleRequire = (request: string): unknown =>
 		request === "latex-suite" ? api : nativeRequire(request);
 	const sourceUrl = identifier.replace(/[\r\n]/g, " ");
-	const syntax = scanModuleSyntax(source);
+	let syntax: ModuleSyntax;
+	let expression: ModuleFactory | null = null;
+	try {
+		syntax = scanModuleSyntax(source);
+	} catch (error) {
+		// Bare objects with quoted keys (or multiple properties) are valid
+		// expressions but invalid module statements. Compile without executing
+		// before accepting this shape, preserving errors for malformed sources.
+		if (!(error instanceof SyntaxError)) {
+			throw error;
+		}
+		expression = tryCompileExpression(source, sourceUrl);
+		if (!expression) {
+			throw error;
+		}
+		syntax = { exportDefault: null, usesCommonJsExports: false };
+	}
 
 	if (syntax.exportDefault) {
 		const transformed = source.slice(0, syntax.exportDefault.start) +
@@ -259,7 +275,7 @@ export function evaluateSnippetModule(
 	// bare array containing side effects must not first execute as an empty
 	// CommonJS module and then execute a second time as an expression.
 	if (!syntax.usesCommonJsExports) {
-		const expression = tryCompileExpression(source, sourceUrl);
+		expression ??= tryCompileExpression(source, sourceUrl);
 		if (expression) {
 			const module = createCommonJsModule();
 			return expression(

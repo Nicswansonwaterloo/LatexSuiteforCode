@@ -414,6 +414,22 @@ suite("LaTeX Suite extension", function () {
 			assert.equal(normalizeEol(editor.document.getText()), "first\nprobe:2:2");
 		});
 
+		test("automatically expands End using a quoted operator-name variable", async () => {
+			await setSnippetLoaderSetting("snippets.variablesSource", `{
+				"\${GREEK}": "alpha|beta",
+				"\${OPERATORNAMES}": "End|Hom|Aut|Mat|wt|GL|char|Pic|disc|trd"
+			}`);
+			await setSnippetSource(`[{
+				trigger: "(\${OPERATORNAMES})",
+				replacement: "\\\\operatorname{[[0]]}",
+				options: "rmA"
+			}]`);
+			const editor = await openEditor("markdown", "$$", 1);
+			await typeCharacters("End");
+			await waitFor(() => editor.document.getText() === "$\\operatorname{End}$");
+			assert.equal(editor.document.getText(), "$\\operatorname{End}$");
+		});
+
 		test("triggerKey copies do not consume an automatic text trigger", async () => {
 			await setSnippetSource(`[{
 				trigger: "foo",

@@ -4,6 +4,11 @@ All notable changes to LaTeX Suite for VS Code are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- Load bare snippet-variable objects with quoted keys such as
+  `"${OPERATORNAMES}"`, allowing custom operator snippets such as `End` to expand.
+
 ## [1.0.0] - 2026-10-02
 
 ### Fixed
