@@ -57,17 +57,23 @@ Linux headless hosts need a display, for example `xvfb-run -a npm test`.
 The GitHub workflow runs minimum/stable editor suites and package checks on
 Linux, Windows, and macOS, plus installed/trust smoke checks on Linux. It does
 not publish and needs no Marketplace credentials. Hosted job results must be
-reviewed after a public repository is connected.
+reviewed for the exact revision intended for release.
 
-## Maintenance evidence (2026-10-02)
+## Maintenance evidence
 
-- Linux VS Code 1.137.0 and 1.140.0 each pass 136 host tests: 121 editor/core,
-  13 configuration/multi-root, and 2 lifecycle tests. All 3 standalone parse
+- Local review (2026-10-02): Linux VS Code 1.137.0 and 1.140.0 each pass
+  136 host tests: 121 editor/core, 13 configuration/multi-root, and 2 lifecycle
+  tests. All 3 standalone parse
   tests pass. Type checks (including unused locals/parameters) and lint pass.
   The dependency audit reports zero known vulnerabilities on this date.
-- The archive allowlist contains 12 ZIP entries, including VSIX metadata.
-  Installed trusted and Restricted Mode smoke tests pass on Linux. Hosted
-  Windows/macOS jobs have been configured but have not run from this checkout.
+- [Hosted CI on 2026-10-06](https://github.com/Nicswansonwaterloo/latexsuiteport/actions/runs/37470941158)
+  passed all six Linux/Windows/macOS × minimum/stable jobs at commit
+  `119450b6ec5bac02e735e7fb04025bfd2c51a515`, including package validation
+  and Linux installed/trust smoke tests. This is historical evidence; check
+  CI again for the exact release revision.
+- The package allowlist contains 11 ZIP entries, including VSIX metadata.
+  The development guide stays in the repository and is linked from the README;
+  it is not installed with the extension.
 - Lifecycle tests now construct and dispose a real controller in a separate
   host. They verify command removal and cancellation of an actual pending wait.
 - Delayed non-file source tests hold `workspace.fs.readFile` until selection,
@@ -106,9 +112,9 @@ claiming low typing latency in arbitrarily large documents.
 - [ ] Confirm that the configured GitHub repository, README, and issue tracker
   are publicly accessible. The Marketplace resource URLs are derived from the
   configured Git remote; public availability has not been verified here.
-- [ ] Review Windows and macOS minimum/stable CI results once hosted, then test
-  physical Tab/Enter/Shift+Enter/Mod bindings, undo, completion popups, Tab focus
-  mode, and IME input on those systems. Linux command tests cannot establish this.
+- [ ] Test physical Tab/Enter/Shift+Enter/Mod bindings, undo, completion popups,
+  Tab focus mode, and IME input on Windows and macOS. Automated command tests
+  cannot establish physical keyboard behavior.
 - [ ] Manually grant trust in a previously restricted workspace and confirm
   configured sources become available without stale edits. The automated tests
   cover Restricted Mode itself and a simulated gate transition, not this UI flow.
@@ -122,7 +128,7 @@ claiming low typing latency in arbitrarily large documents.
 
 ## Marketplace publication
 
-Version `1.0.0` is configured. Publication is a separate, manual step after all
+Version `1.0.3` is configured. Publication is a separate, manual step after all
 release gates above pass. The publishing account and a fresh release archive
 are still required; repository configuration alone cannot confirm readiness.
 
@@ -135,10 +141,10 @@ are still required; repository configuration alone cannot confirm readiness.
    or newer; development uses Node.js 24. Consumers do not install the build
    tools separately. Browser-only VS Code is unsupported.
 3. Require successful minimum/stable GitHub Actions checks on Linux, Windows,
-   and macOS after the Windows license-comparison fix. Complete the remaining
+   and macOS for the exact release revision. Complete the remaining
    manual editor, trust, and remote checks above.
 4. From the exact revision intended for release, run the reproducible checks
-   above. `npm run package:vsix` creates `latex-suite-1.0.0.vsix` and builds the
+   above. `npm run package:vsix` creates `latex-suite-1.0.3.vsix` and builds the
    production bundle first. `npm run check:package` validates its content;
    `test:vsix` and `test:trust` exercise that same archive. Rebuild and recheck
    after any changes; previously generated archives may be stale.

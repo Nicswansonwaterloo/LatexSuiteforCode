@@ -345,8 +345,8 @@ configured trigger, not after arbitrary edits.
 
 ## Development
 
-See the bundled `DEVELOPMENT.md` for the VS Code API review, engineering
-rules, and release checks.
+See the [development guide](https://github.com/Nicswansonwaterloo/latexsuiteport/blob/main/DEVELOPMENT.md)
+for the VS Code API review, engineering rules, and release checks.
 
 ```sh
 # Node.js 24 (see .nvmrc)
