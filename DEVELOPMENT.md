@@ -62,24 +62,84 @@ custom snippets can add typing latency.
 
 ## Releasing
 
-1. Bump `version` in `package.json` (`npm version <x.y.z> --no-git-tag-version`).
-2. Make sure CI is green on the exact commit being released.
-3. Run the checks above, ending with `package:vsix`, `check:package`,
-   `test:vsix`, and `test:trust`.
-4. Do these manual checks, which automated tests cannot cover:
+After the one-time setup below, pushing a version tag such as `v1.1.1` publishes
+that release to `qmvis.latex-suite-vscode`. Ordinary branch pushes, pull requests,
+and the CI workflow's manual Run button only check code; they never publish.
+Merging the workflow alone does not enable publishing.
+
+1. Bump both manifest and lockfile versions with
+   `npm version <x.y.z> --no-git-tag-version`. Use a new stable version above the
+   current Marketplace version; `1.1.0` is already published and cannot be reused.
+2. Commit the version bump and merge the reviewed changes into `main`.
+3. Check CI and do these manual checks, which automated tests cannot cover:
    - physical `Tab`, `Enter`, `Shift+Enter`, and `Mod-` keybindings, undo,
      completion popups, Tab focus mode, and IME input on Windows and macOS;
    - granting trust to a workspace that opened in Restricted Mode;
    - a virtual workspace and a remote extension host.
-5. Publish the checked VSIX from the
-   [Marketplace publisher page](https://marketplace.visualstudio.com/manage/publishers/),
-   or with `npx vsce publish --packagePath latex-suite-vscode-<version>.vsix`. See the
-   [publishing guide](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)
-   for authentication; prefer Microsoft Entra ID, since global Azure DevOps PATs
-   are retired on December 1, 2026. Keep credentials out of the repository.
-6. Tag the release commit.
+4. From the intended release commit on `main`, create and push only that tag:
+   `git tag v<x.y.z>` then `git push origin v<x.y.z>`. Release one version at a
+   time and wait for that run to finish before pushing another release tag.
+5. Watch **Publish Marketplace release** in Actions. It validates the exact
+   tag/version/lockfile and `qmvis.latex-suite-vscode` identity, requires the commit
+   to be on `main`, and reruns the full existing OS/VS Code test matrix. Publishing
+   waits for every matrix job and uses the exact Linux stable VSIX that passed
+   package, installed-extension, and Restricted Mode checks, without rebuilding it.
+   Approve the `marketplace` environment if required by its protection rules.
+6. Confirm the new version appears on the
+   [Marketplace listing](https://marketplace.visualstudio.com/items?itemName=qmvis.latex-suite-vscode).
+   A successful upload can still need Marketplace processing.
 
-The publisher ID in `package.json` (`qmvis`) must match the
-Marketplace publisher. If it changes, update every use of the extension ID
-(`qmvis.latex-suite-vscode`) in `src/extension.ts` and `src/test/`, then
-repackage.
+The workflow does not increment versions, create tags, or create GitHub releases.
+A failed test blocks publication. If publishing fails, fix its cause and inspect
+whether that version already reached Marketplace before retrying; never move a
+published tag or reuse a published version. The tested artifact is retained for
+seven days. To pause publishing, unset `MARKETPLACE_PUBLISH_ENABLED`.
+
+### One-time owner setup (required before enabling)
+
+No credentials or cloud resources are created by these workflows. The repository
+owner must separately authorize and complete this setup. Do not put tokens,
+passwords, or client secrets in source code, issues, PRs, or chat.
+
+This workflow uses the pinned `@vscode/vsce` with Microsoft Entra authentication.
+Microsoft recommends federation instead of long-lived PATs; global Azure DevOps
+PATs retire on December 1, 2026. See the official
+[Marketplace publishing guide](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#secure-automated-publishing-to-visual-studio-marketplace).
+
+1. Create the GitHub environment `marketplace` in this repository **before**
+   enabling publishing. Restrict its deployment rules to tags matching `v*`, with
+   no branch rule. Add a required reviewer if releases should need approval.
+   Protect `main` and release tags against unauthorized changes/deletion.
+2. Use a dedicated Microsoft Entra application/service principal or user-assigned
+   managed identity. Follow Microsoft's
+   [GitHub OIDC setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure-openid-connect)
+   and [Azure Login guidance](https://github.com/Azure/login#login-with-openid-connect-oidc-recommended).
+   Bind federation to this repository's `marketplace` environment, issuer
+   `https://token.actions.githubusercontent.com`, and audience
+   `api://AzureADTokenExchange`. Use the exact subject issued for
+   `Nicswansonwaterloo/latex-suite-vscode` and this environment. The default
+   [immutable subject](https://docs.github.com/en/actions/reference/security/oidc#immutable-subject-claims)
+   expected from this repository's creation date and IDs is
+   `repo:Nicswansonwaterloo@204956139/latex-suite-vscode@1402109021:environment:marketplace`.
+   This is not a captured token claim; verify the actual subject and any custom
+   settings before saving the federation. Do not
+   copy the old repository name or broaden trust to arbitrary repositories or PRs.
+3. Authorize that identity as a **Contributor** of the `qmvis` Marketplace
+   publisher, using the Marketplace identity/resource ID obtained through the
+   publishing guide's Azure DevOps profile lookup. An Entra object ID alone is
+   not a substitute. This workflow does not deploy Azure resources and uses
+   `allow-no-subscriptions`; it does not require Azure subscription Contributor
+   access. Azure tenant and Marketplace administrators may be needed for setup.
+4. In the `marketplace` environment, store `AZURE_CLIENT_ID` and
+   `AZURE_TENANT_ID` as Actions secrets. No client secret or PAT is used. Only the
+   publishing job can request a short-lived OIDC token; test jobs have read-only
+   repository access and no publisher credentials.
+5. After reviewing the setup, create the **repository Actions variable**
+   `MARKETPLACE_PUBLISH_ENABLED` with value `true`. Until then tags are validated
+   and tested but the publishing job is skipped. Treat the next new version-tag
+   push as authorization to publish it. Authenticated publishing is intentionally
+   not exercised by ordinary PR validation; verify it on the first intended
+   release after owner setup.
+
+Keep the publisher and extension name stable. Changing the display name does not
+require changing `qmvis.latex-suite-vscode`, which identifies existing installs.
