@@ -35,7 +35,7 @@ suite("virtual sources and delayed loading", () => {
 				return new TextEncoder().encode('[{ trigger: "probe", options: "m", replacement: () => { globalThis.latexSuiteReplacementCalls++; return "VIRTUAL"; } }]');
 			},
 		}, { isReadonly: true });
-		await vscode.extensions.getExtension("latex-suite-port.latex-suite")!.activate();
+		await vscode.extensions.getExtension("qmvis.latex-suite-vscode")!.activate();
 		for (const [key, value] of Object.entries({ enabled: true, "snippets.files": [sourceUri.toString()], "snippets.source": "", "snippets.variablesSource": "", "snippets.variableFiles": [] })) {
 			await config().update(key, value, vscode.ConfigurationTarget.Global);
 		}

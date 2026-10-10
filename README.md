@@ -72,7 +72,7 @@ Things to know:
 
 - **Custom snippets replace the bundled set.** They are not merged. To build
   on the defaults, start from a copy of
-  [the bundled snippets](https://github.com/Nicswansonwaterloo/LatexSuiteforCode/blob/main/src/upstream/default_snippets.js).
+  [the bundled snippets](https://github.com/Nicswansonwaterloo/latex-suite-vscode/blob/main/src/upstream/default_snippets.js).
 - Relative paths resolve against the workspace folder of the open file. A
   folder path loads every file inside it, including subfolders, in path order.
 - Snippets can also be written inline in `latexSuite.snippets.source`. Set it to
@@ -304,14 +304,14 @@ multi-root workspace.
 ## Contributing
 
 Bug reports and pull requests are welcome on
-[GitHub](https://github.com/Nicswansonwaterloo/LatexSuiteforCode/issues). See
-the [development guide](https://github.com/Nicswansonwaterloo/LatexSuiteforCode/blob/main/DEVELOPMENT.md)
+[GitHub](https://github.com/Nicswansonwaterloo/latex-suite-vscode/issues). See
+the [development guide](https://github.com/Nicswansonwaterloo/latex-suite-vscode/blob/main/DEVELOPMENT.md)
 for building and testing.
 
 ## Credits and license
 
 Based on [Obsidian LaTeX Suite](https://github.com/artisticat1/obsidian-latex-suite)
 v1.13.1 by artisticat1, used under the MIT License. Differences from upstream
-are listed in `UPSTREAM.md`. See `LICENSE.md`, `src/upstream/LICENSE.md`, and
+are listed in `UPSTREAM.md`. See `LICENSE`, `src/upstream/LICENSE.md`, and
 `THIRD_PARTY_NOTICES.md`. This is an independent port, not an official release
 of Obsidian LaTeX Suite.

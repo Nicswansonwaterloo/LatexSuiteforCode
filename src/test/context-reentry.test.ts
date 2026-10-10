@@ -11,7 +11,7 @@ suite("context after direct cursor entry", () => {
 			previous.set(key, configuration.inspect(key)?.globalValue);
 			await configuration.update(key, value, vscode.ConfigurationTarget.Global);
 		}
-		await vscode.extensions.getExtension("latex-suite-port.latex-suite")!.activate();
+		await vscode.extensions.getExtension("qmvis.latex-suite-vscode")!.activate();
 	});
 
 	teardown(async () => {

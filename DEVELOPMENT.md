@@ -9,7 +9,7 @@ npm ci
 npm run test:unit                       # editor-independent parser tests
 npm test                                # integration tests on current stable VS Code
 npm test -- --code-version 1.137.0      # integration tests on the minimum supported VS Code
-npm run package:vsix                    # build latex-suite-<version>.vsix (does not publish)
+npm run package:vsix                    # build latex-suite-vscode-<version>.vsix (does not publish)
 npm run check:package                   # verify the archive contents
 npm run test:vsix                       # install the archive into a clean profile and smoke-test it
 npm run test:trust                      # same, in Restricted Mode
@@ -73,13 +73,13 @@ custom snippets can add typing latency.
    - a virtual workspace and a remote extension host.
 5. Publish the checked VSIX from the
    [Marketplace publisher page](https://marketplace.visualstudio.com/manage/publishers/),
-   or with `npx vsce publish --packagePath latex-suite-<version>.vsix`. See the
+   or with `npx vsce publish --packagePath latex-suite-vscode-<version>.vsix`. See the
    [publishing guide](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)
    for authentication; prefer Microsoft Entra ID, since global Azure DevOps PATs
    are retired on December 1, 2026. Keep credentials out of the repository.
 6. Tag the release commit.
 
-The publisher ID in `package.json` (`latex-suite-port`) must match the
+The publisher ID in `package.json` (`qmvis`) must match the
 Marketplace publisher. If it changes, update every use of the extension ID
-(`latex-suite-port.latex-suite`) in `src/extension.ts` and `src/test/`, then
+(`qmvis.latex-suite-vscode`) in `src/extension.ts` and `src/test/`, then
 repackage.

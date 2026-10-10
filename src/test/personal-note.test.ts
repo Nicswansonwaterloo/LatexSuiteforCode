@@ -26,7 +26,7 @@ suite("Personal configuration long-form typing (development only)", function () 
 			for (const [key, value] of Object.entries(settings)) {
 				await configuration.update(key, value, vscode.ConfigurationTarget.Global);
 			}
-			await vscode.extensions.getExtension("latex-suite-port.latex-suite")!.activate();
+			await vscode.extensions.getExtension("qmvis.latex-suite-vscode")!.activate();
 			await vscode.commands.executeCommand("latexSuite.reloadSnippets");
 			for (const part of personalNote) {
 				if ("prose" in part) {

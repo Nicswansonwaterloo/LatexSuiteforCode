@@ -21,7 +21,7 @@ suite("multi-root snippet loading", () => {
 				await vscode.workspace.fs.writeFile(source, new TextEncoder().encode(`[{ trigger: "probe", replacement: "FOLDER${index}", options: "m" }]`));
 				await vscode.workspace.fs.writeFile(note, new TextEncoder().encode("$probe$"));
 			}
-			await vscode.extensions.getExtension("latex-suite-port.latex-suite")!.activate();
+			await vscode.extensions.getExtension("qmvis.latex-suite-vscode")!.activate();
 			for (const index of [0, 1, 0]) {
 				const document: vscode.TextDocument = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(folders![index].uri, "note.md"));
 				const editor = await vscode.window.showTextDocument(document);

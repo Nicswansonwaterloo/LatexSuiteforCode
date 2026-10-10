@@ -16,7 +16,7 @@ suite("controller lifecycle", () => {
 	suiteTeardown(() => output.dispose());
 
 	test("real disposal unregisters commands, cancels pending waits, and invalidates operations", async () => {
-		assert.equal(vscode.extensions.getExtension("latex-suite-port.latex-suite")!.isActive, false);
+		assert.equal(vscode.extensions.getExtension("qmvis.latex-suite-vscode")!.isActive, false);
 		const document = await vscode.workspace.openTextDocument({ language: "plaintext", content: "ab" });
 		const editor = await vscode.window.showTextDocument(document);
 		const controller = new LatexSuiteController(output);

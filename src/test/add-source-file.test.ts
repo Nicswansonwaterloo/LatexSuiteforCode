@@ -31,7 +31,7 @@ suite("Add source file commands", () => {
 				selected = [localFile];
 				messages = [];
 				dialogOptions = undefined;
-				await vscode.extensions.getExtension("latex-suite-port.latex-suite")!.activate();
+				await vscode.extensions.getExtension("qmvis.latex-suite-vscode")!.activate();
 				vscode.window.showOpenDialog = async options => {
 					dialogOptions = options;
 					return selected;

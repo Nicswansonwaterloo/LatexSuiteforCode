@@ -68,7 +68,7 @@ interface EditOptions {
 	undoStopAfter?: boolean;
 }
 
-const EXTENSION_ID = "latex-suite-port.latex-suite";
+const EXTENSION_ID = "qmvis.latex-suite-vscode";
 
 export function activate(extensionContext: vscode.ExtensionContext): void {
 	const output = vscode.window.createOutputChannel("LaTeX Suite", { log: true });

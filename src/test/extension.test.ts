@@ -8,7 +8,7 @@ suite("LaTeX Suite extension", function () {
 
 	suiteSetup(async () => {
 		await resetSnippetLoaderSettings();
-		const extension = vscode.extensions.getExtension("latex-suite-port.latex-suite");
+		const extension = vscode.extensions.getExtension("qmvis.latex-suite-vscode");
 		assert.ok(extension, "extension should be discoverable by its manifest id");
 		await extension.activate();
 	});
@@ -23,7 +23,7 @@ suite("LaTeX Suite extension", function () {
 	});
 
 	test("keybindings do not depend on asynchronous snippet matching", () => {
-		const extension = vscode.extensions.getExtension("latex-suite-port.latex-suite");
+		const extension = vscode.extensions.getExtension("qmvis.latex-suite-vscode");
 		assert.ok(extension);
 		const keybindings = extension.packageJSON.contributes.keybindings as Array<{
 			command: string;
