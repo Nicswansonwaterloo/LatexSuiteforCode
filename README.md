@@ -1,6 +1,7 @@
-# LaTeX Suite for VS Code
+# LaTeX Suite
 
-Fast LaTeX typing shortcuts for Markdown and LaTeX documents, ported from
+Fast LaTeX typing shortcuts for Visual Studio Code in Markdown and LaTeX
+documents, ported from
 [Obsidian LaTeX Suite](https://github.com/artisticat1/obsidian-latex-suite). The
 extension keeps the upstream JavaScript snippet format and bundled defaults while
 using VS Code's native editor, configuration, workspace-trust, and snippet APIs.
@@ -345,7 +346,7 @@ configured trigger, not after arbitrary edits.
 
 ## Development
 
-See the [development guide](https://github.com/Nicswansonwaterloo/latexsuiteport/blob/main/DEVELOPMENT.md)
+See the [development guide](https://github.com/Nicswansonwaterloo/LatexSuiteforCode/blob/main/DEVELOPMENT.md)
 for the VS Code API review, engineering rules, and release checks.
 
 ```sh
