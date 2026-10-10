@@ -1,8 +1,8 @@
 {
   "name": "latex-suite",
   "displayName": "LaTeX Suite",
-  "description": "Fast LaTeX typing shortcuts for Visual Studio Code in Markdown and LaTeX, ported from Obsidian LaTeX Suite.",
-  "version": "1.0.3",
+  "description": "Fast LaTeX math typing in Markdown and LaTeX: auto-expanding snippets, auto-fractions, matrix shortcuts, and Tab navigation. A port of Obsidian LaTeX Suite.",
+  "version": "1.1.0",
   "publisher": "latex-suite-port",
   "license": "SEE LICENSE IN LICENSE.md",
   "icon": "assets/icon.png",
@@ -59,12 +59,12 @@
       {
         "command": "latexSuite.addSnippetFile",
         "category": "LaTeX Suite",
-        "title": "Add Snippet File\u2026"
+        "title": "Add Snippet File…"
       },
       {
         "command": "latexSuite.addVariableFile",
         "category": "LaTeX Suite",
-        "title": "Add Variable File\u2026"
+        "title": "Add Variable File…"
       },
       {
         "command": "latexSuite.expandSnippet",
@@ -155,14 +155,14 @@
           "default": true,
           "scope": "resource",
           "order": 1,
-          "description": "Enable LaTeX Suite typing shortcuts for Markdown and LaTeX documents."
+          "markdownDescription": "Enable LaTeX Suite typing shortcuts in Markdown and LaTeX files."
         },
         "latexSuite.snippets.enabled": {
           "type": "boolean",
           "default": true,
           "scope": "resource",
           "order": 10,
-          "description": "Enable automatic and manual snippet expansion."
+          "markdownDescription": "Expand snippets, both automatically and with `Tab`."
         },
         "latexSuite.snippets.files": {
           "type": "array",
@@ -172,15 +172,15 @@
           "default": [],
           "scope": "resource",
           "order": 12,
-          "description": "JavaScript snippet files or directories. Configured sources replace bundled snippets. Relative paths resolve from the current workspace folder. Files use the upstream format and execute as JavaScript."
+          "markdownDescription": "Snippet files or folders to load. Any custom snippets replace the bundled set. Relative paths resolve against the workspace folder.\n\nSnippet files are JavaScript and run as code. Only add files you trust."
         },
         "latexSuite.snippets.source": {
           "type": "string",
           "default": "",
           "scope": "resource",
           "order": 13,
-          "editPresentation": "multilineText",
-          "description": "Inline JavaScript snippet source in the upstream format. Configured sources replace bundled snippets; use [] for an empty collection. Prefer snippet files for larger configurations."
+          "markdownDescription": "Snippets written inline, in the same JavaScript format as snippet files. Any custom snippets replace the bundled set; enter `[]` to turn off all snippets. Snippet files are easier to maintain for larger collections.",
+          "editPresentation": "multilineText"
         },
         "latexSuite.snippets.variableFiles": {
           "type": "array",
@@ -190,15 +190,15 @@
           "default": [],
           "scope": "resource",
           "order": 14,
-          "description": "JavaScript files exporting snippet-variable objects. Relative paths resolve from the current workspace folder."
+          "markdownDescription": "JavaScript files that export snippet variables. These are added to the bundled variables and override any with the same name. Relative paths resolve against the workspace folder."
         },
         "latexSuite.snippets.variablesSource": {
           "type": "string",
           "default": "",
           "scope": "resource",
           "order": 15,
-          "editPresentation": "multilineText",
-          "description": "Inline JavaScript object containing snippet variables in the upstream format."
+          "markdownDescription": "Snippet variables written inline as a JavaScript object. These are added to the bundled variables and override any with the same name.",
+          "editPresentation": "multilineText"
         },
         "latexSuite.snippets.recursionLimit": {
           "type": "integer",
@@ -207,21 +207,21 @@
           "maximum": 10,
           "scope": "resource",
           "order": 16,
-          "description": "Additional automatic-expansion passes after the first expansion."
+          "markdownDescription": "How many more times automatic snippets may expand on text that a snippet just inserted. `0` turns this off."
         },
         "latexSuite.snippets.wordDelimiters": {
           "type": "string",
           "default": "., +-\\n\\t:;!?\\/{}[]()=~$'\"|`<>*^%#@&",
           "scope": "resource",
           "order": 17,
-          "description": "Characters accepted around snippets with the w (word-boundary) option. Use \\n and \\t for newline and tab."
+          "markdownDescription": "Characters that count as word boundaries for snippets with the `w` option. Write `\\n` and `\\t` for newline and tab."
         },
         "latexSuite.snippets.removeTrailingWhitespace": {
           "type": "boolean",
           "default": true,
           "scope": "resource",
           "order": 18,
-          "description": "Trim trailing whitespace from replacements in inline math."
+          "markdownDescription": "Remove trailing spaces from snippet output in inline math."
         },
         "latexSuite.forceMathLanguages": {
           "type": "array",
@@ -233,28 +233,28 @@
           ],
           "scope": "resource",
           "order": 20,
-          "description": "Markdown fenced-code language names treated as display math."
+          "markdownDescription": "Markdown code-fence languages whose contents are treated as display math."
         },
         "latexSuite.autoFraction.enabled": {
           "type": "boolean",
           "default": true,
           "scope": "resource",
           "order": 30,
-          "description": "Typing / in math converts the preceding expression or selection to a fraction."
+          "markdownDescription": "Typing `/` in math turns the preceding expression, or the selection, into a fraction."
         },
         "latexSuite.autoFraction.symbol": {
           "type": "string",
           "default": "\\frac",
           "scope": "resource",
           "order": 31,
-          "description": "LaTeX command inserted by auto-fraction."
+          "markdownDescription": "Command inserted by auto-fraction, such as `\\frac` or `\\dfrac`."
         },
         "latexSuite.autoFraction.breakingCharacters": {
           "type": "string",
           "default": "+-=\\t",
           "scope": "resource",
           "order": 32,
-          "description": "Additional characters that stop the backward numerator scan."
+          "markdownDescription": "Extra characters that end the numerator when auto-fraction looks backward. Spaces, `$`, and opening brackets always end it. Write `\\t` for tab."
         },
         "latexSuite.autoFraction.excludedRegions": {
           "type": "array",
@@ -285,14 +285,14 @@
           ],
           "scope": "resource",
           "order": 33,
-          "description": "Delimited regions where auto-fraction is disabled."
+          "markdownDescription": "Regions where typing `/` never creates a fraction, given as `open`/`close` pairs."
         },
         "latexSuite.matrixShortcuts.enabled": {
           "type": "boolean",
           "default": true,
           "scope": "resource",
           "order": 40,
-          "description": "Enable Tab, Enter, and Shift+Enter matrix shortcuts."
+          "markdownDescription": "Inside matrix-like environments, `Tab` adds a cell, `Enter` starts a new row, and `Shift+Enter` leaves the environment."
         },
         "latexSuite.matrixShortcuts.environments": {
           "type": "array",
@@ -313,7 +313,7 @@
           ],
           "scope": "resource",
           "order": 41,
-          "description": "LaTeX environments where matrix shortcuts are active."
+          "markdownDescription": "Environments where matrix shortcuts are active."
         },
         "latexSuite.matrixShortcuts.macros": {
           "type": "array",
@@ -325,14 +325,14 @@
           ],
           "scope": "resource",
           "order": 42,
-          "description": "LaTeX macros where matrix shortcuts are active."
+          "markdownDescription": "Macros, such as `\\eqalign{...}`, where matrix shortcuts are active."
         },
         "latexSuite.tabOut.enabled": {
           "type": "boolean",
           "default": true,
           "scope": "resource",
           "order": 50,
-          "description": "Use Tab to move through closing delimiters and out of equations."
+          "markdownDescription": "Use `Tab` to jump past closing brackets and out of equations."
         },
         "latexSuite.tabOut.closingSymbols": {
           "type": "array",
@@ -355,21 +355,21 @@
           ],
           "scope": "resource",
           "order": 51,
-          "description": "Closing delimiters visited by Tab navigation."
+          "markdownDescription": "Closing delimiters that `Tab` jumps past."
         },
         "latexSuite.tabOut.exitEquationOnlyAtEndOfLine": {
           "type": "boolean",
           "default": true,
           "scope": "resource",
           "order": 52,
-          "description": "Exit an equation only when the remaining equation text is whitespace."
+          "markdownDescription": "Only let `Tab` leave an equation when nothing but whitespace remains before its end."
         },
         "latexSuite.bracketEnlargement.enabled": {
           "type": "boolean",
           "default": true,
           "scope": "resource",
           "order": 60,
-          "description": "Add \\left and \\right around brackets containing configured large operators."
+          "markdownDescription": "When a snippet inserts a large operator such as `\\sum` inside brackets, change them to `\\left( ... \\right)`."
         },
         "latexSuite.bracketEnlargement.triggers": {
           "type": "array",
@@ -386,14 +386,14 @@
           ],
           "scope": "resource",
           "order": 61,
-          "description": "Replacement substrings that cause enclosing brackets to enlarge."
+          "markdownDescription": "Commands whose insertion enlarges the surrounding brackets."
         },
         "latexSuite.bracketEnlargement.insertSpaces": {
           "type": "boolean",
           "default": true,
           "scope": "resource",
           "order": 62,
-          "description": "Insert a space inside automatically enlarged brackets."
+          "markdownDescription": "Add a space just inside brackets after enlarging them."
         },
         "latexSuite.debug": {
           "type": "string",
@@ -405,7 +405,12 @@
           "default": "off",
           "scope": "resource",
           "order": 70,
-          "description": "Log snippet matching details to the LaTeX Suite output channel."
+          "markdownDescription": "Log snippet matching to the **LaTeX Suite** output channel.",
+          "enumDescriptions": [
+            "No logging.",
+            "Log each snippet expansion.",
+            "Log each expansion with its math mode and enclosing scopes."
+          ]
         }
       }
     }

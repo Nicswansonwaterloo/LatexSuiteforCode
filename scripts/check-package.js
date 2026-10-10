@@ -6,10 +6,10 @@ const manifest = require('../package.json');
 
 const root = path.resolve(__dirname, '..');
 const artifact = process.argv[2] ?? path.join(root, `${manifest.name}-${manifest.version}.vsix`);
-const expected = ['package.json', 'README.md', 'CHANGELOG.md', 'LICENSE.md', 'UPSTREAM.md',
+const expected = ['package.json', 'README.md', 'LICENSE.md', 'UPSTREAM.md',
 	'THIRD_PARTY_NOTICES.md', 'src/upstream/LICENSE.md', 'dist/extension.js', 'assets/icon.png'];
 
-const archiveName = file => `extension/${['README.md', 'CHANGELOG.md'].includes(file) ? file.toLowerCase() : file}`;
+const archiveName = file => `extension/${file === 'README.md' ? file.toLowerCase() : file}`;
 
 async function main() {
 	const archive = await new Promise((resolve, reject) => yauzl.open(artifact, { lazyEntries: true }, (error, zip) => error ? reject(error) : resolve(zip)));

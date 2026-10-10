@@ -1,65 +1,65 @@
 # LaTeX Suite
 
-Fast LaTeX typing shortcuts for Visual Studio Code in Markdown and LaTeX
-documents, ported from
-[Obsidian LaTeX Suite](https://github.com/artisticat1/obsidian-latex-suite). The
-extension keeps the upstream JavaScript snippet format and bundled defaults while
-using VS Code's native editor, configuration, workspace-trust, and snippet APIs.
+Type LaTeX math quickly in Markdown and LaTeX files. LaTeX Suite expands short
+triggers into LaTeX as you type, turns `/` into fractions, and lets you `Tab`
+through brackets and out of equations.
 
-Requires VS Code 1.137 or newer.
+This is a VS Code port of
+[Obsidian LaTeX Suite](https://github.com/artisticat1/obsidian-latex-suite). It
+uses the same snippet format and ships the same default snippets.
+
+Requires VS Code 1.137 or newer (desktop).
+
+## Try it
+
+Open a Markdown file and type:
+
+| Type | Result |
+| --- | --- |
+| `dm` | a `$$ … $$` display-math block |
+| `mk` | inline math `$ … $` |
+| `xsr` (in math) | `x^{2}` |
+| `sin @t` (in math) | `\sin \theta` |
+| `x/y` then `Tab` (in math) | `\frac{x}{y}` |
+
+Press `Tab` to move to the next placeholder, past a closing bracket, or out of
+the equation.
 
 ## Features
 
-- Automatic (`A`) and manual (`Tab`) snippets, literal or regular-expression
-  triggers, priorities, word boundaries, look-ahead triggers, context filters,
-  JavaScript replacement functions, visual-selection snippets, and tabstops.
-- The upstream default snippet and variable sets. Try `dm`, then `xsr`, `sin @t`,
-  or `x/y` followed by `Tab`.
-- `/` auto-fractions, including balanced expressions and selected numerators.
-- Matrix shortcuts: `Tab` inserts ` & `, `Enter` starts a row, and `Shift+Enter`
-  exits the current matrix-like scope.
-- Contextual `Tab` navigation through native snippet placeholders, configured
-  closing delimiters, and out of an equation.
-- Automatic `\left`/`\right` enlargement when a snippet inserts a configured
-  large operator inside brackets.
-- User settings with workspace and multi-root workspace-folder overrides.
+- **Snippets** expand automatically or on `Tab`, only where they make sense:
+  in math, in text, or in code blocks. Triggers can be plain text or regular
+  expressions, and replacements can be JavaScript functions.
+- **Auto-fraction**: typing `/` in math turns the preceding expression, or the
+  selection, into `\frac{…}{}`.
+- **Matrix shortcuts**: inside `pmatrix`, `align`, `cases`, and similar
+  environments, `Tab` adds ` & `, `Enter` starts a new row, and `Shift+Enter`
+  leaves the environment.
+- **Tab-out**: `Tab` jumps through snippet placeholders, then past closing
+  brackets, then out of the equation.
+- **Bracket enlargement**: when a snippet inserts something large like `\sum`
+  or `\frac` inside brackets, they become `\left( … \right)`.
 
-### Markdown and LaTeX contexts
+### Where math is detected
 
-In Markdown, the context scanner recognizes `$...$`, `$$...$$`, `\(...\)`,
-`\[...\]`, common LaTeX math environments, inline code, and fenced code blocks.
-Fences whose first info-string word is listed in `latexSuite.forceMathLanguages`
-(the default is `math`) are treated as display math. Other fences support the `c`
-option and `language` field; inline code supports `C`.
+In Markdown: `$…$`, `$$…$$`, `\(…\)`, `\[…\]`, common math environments, and
+code fences whose language is `math` (configurable with
+`latexSuite.forceMathLanguages`). Inline code and other code fences are not math.
 
-In LaTeX documents, the same math delimiters and common math environments are
-recognized, and `%` comments suppress otherwise context-free snippets. Math text
-macros such as `\text{...}` use the `T` context. Scope conditions also understand
-enclosing macros and environments.
+In LaTeX: the same delimiters and environments. Text inside `\text{…}` and
+similar macros has its own context (the `T` option), and `%` comments block
+snippets that have no context restriction.
 
-The scanner is designed for editing, not as a complete TeX or CommonMark parser.
-It does not expand TeX definitions or interpret catcode changes.
+The detector is built for editing speed. It is not a full TeX parser and does
+not expand custom macro definitions.
 
-For typing responsiveness, unanchored regex triggers inspect at most the final
-8,192 UTF-16 code units before the cursor. Start-anchored regexes still inspect
-the complete document prefix.
+## Custom snippets
 
-## Snippets
+By default you get the bundled snippet set. To use your own, run
+**LaTeX Suite: Add Snippet File…** and pick a file. This adds it to
+`latexSuite.snippets.files` in your User settings.
 
-### Loading snippets
-
-Run **LaTeX Suite: Add Snippet File…** or **LaTeX Suite: Add Variable File…**
-to choose a file with the file picker. Each command adds one entry to the
-corresponding file list in **User settings**, even with a workspace open. Local
-files use absolute filesystem paths; non-file resources retain their URIs.
-Existing User entries are preserved, and selecting an already-listed path or
-equivalent file URI does not add a duplicate. Canceling leaves settings unchanged.
-Workspace and folder settings are never copied, changed, or migrated by these
-commands. Existing workspace/folder overrides still take precedence; edit those
-settings separately if you want the User file list to apply in that workspace.
-
-A project can configure a custom snippet collection in
-`.vscode/settings.json`:
+You can also configure snippets per project in `.vscode/settings.json`:
 
 ```json
 {
@@ -68,43 +68,23 @@ A project can configure a custom snippet collection in
 }
 ```
 
-With no custom snippet source configured, the bundled snippets are used. Setting
-inline snippet source or one or more snippet files selects your custom collection
-instead. Inline source and files are loaded together; bundled snippets are never
-implicitly merged into that collection. Blank inline text and blank path entries
-are ignored. To deliberately use no snippets, configure `[]` as the inline source.
-An empty collection, empty file/directory, or failed custom source does not bring
-back bundled snippets. Source errors are reported in the LaTeX Suite output channel.
-Restricted Mode always uses bundled snippets because custom JavaScript is disabled.
+Things to know:
 
-The former `latexSuite.snippets.mode` setting is no longer used. Saved `extend`,
-`replace`, and `defaultsOnly` values are ignored; settings files are not rewritten.
-Existing custom sources now replace bundled snippets regardless of that old value.
-Clear the custom snippet source and file list to return to bundled snippets.
-In particular, an old `defaultsOnly` value no longer disables configured custom
-sources in a trusted workspace, and `replace` with no sources now uses the defaults.
+- **Custom snippets replace the bundled set.** They are not merged. To build
+  on the defaults, start from a copy of
+  [the bundled snippets](https://github.com/Nicswansonwaterloo/LatexSuiteforCode/blob/main/src/upstream/default_snippets.js).
+- Relative paths resolve against the workspace folder of the open file. A
+  folder path loads every file inside it, including subfolders, in path order.
+- Snippets can also be written inline in `latexSuite.snippets.source`. Set it to
+  `[]` to turn off all snippets.
+- Files are not watched. After editing one, run **LaTeX Suite: Reload Snippets**.
+- Errors are shown in the **LaTeX Suite** output channel. If a custom source
+  fails to load, the bundled snippets are not used in its place.
 
-`latexSuite.snippets.source` and `latexSuite.snippets.variablesSource` accept the
-same JavaScript inline in settings. Files are easier to edit and version. A file
-may use `export default`, `module.exports`, or contain a bare array/object
-expression. A configured directory is read recursively in lexical path order;
-every file is treated as JavaScript regardless of extension.
+### Snippet format
 
-Relative paths resolve against the workspace folder containing the active
-document (or the first workspace folder if the document is outside every folder).
-Without a workspace folder, use an absolute path or `file:` URI. In a multi-root
-workspace, the same relative setting can therefore resolve to a different file
-for each folder. Run **LaTeX Suite: Reload Snippets** after editing snippet or variable files.
-Files are cached and are not watched for saves or external changes. Changing
-source settings also invalidates the cache; errors appear in the **LaTeX Suite**
-output channel.
-
-Settings have VS Code's `resource` scope. Put them in User Settings for a global
-default, Workspace Settings for a project override, or a workspace-folder
-settings file for a multi-root override. Open the focused settings page with
-**LaTeX Suite: Open Settings**.
-
-### Upstream-compatible format
+A snippet file is JavaScript that exports an array, using `export default`,
+`module.exports`, or a bare array:
 
 ```js
 export default [
@@ -117,74 +97,65 @@ export default [
     priority: 10,
     description: "Single-letter subscript"
   },
-  {
-    trigger: "(",
-    replacement: "\\left( ${VISUAL} \\right)$0",
-    options: "mv"
-  }
+  { trigger: "(", replacement: "\\left( ${VISUAL} \\right)$0", options: "mv" }
 ];
 ```
 
-A snippet has the following fields:
+Because this is JavaScript, a LaTeX backslash is written `\\`.
 
 | Field | Meaning |
 | --- | --- |
-| `trigger` | String or `RegExp` matched immediately before the caret |
-| `replacement` | String, replacement function, or array of `latex-suite` nodes |
-| `options` | Concatenated option flags from the table below |
-| `priority` | Higher numbers match first; default `0`, negative values allowed |
-| `description` | Used in diagnostics; optional |
-| `flags` | Regex flags `i`, `m`, `s`, `u`, or `v` |
-| `triggerAfter` | String or regex that must match immediately after the caret and is consumed |
-| `triggerKey` | Upstream key name such as `Ctrl-a` or `Mod-Alt-l` |
-| `language` | Exact fenced-code language, used with code-block snippets |
-| `excludedMacros` | Macro names, or `{ name, arguments: [0, ...] }` records, where expansion is disabled |
-| `excludedEnvironments` | Environment names where expansion is disabled |
-| `includedMacros` | Macro names/argument records where expansion is exclusively enabled |
+| `trigger` | Text or `RegExp` matched just before the cursor |
+| `replacement` | Text, a function, or an array of snippet nodes |
+| `options` | Option letters from the table below |
+| `priority` | Higher matches first (default `0`) |
+| `description` | Shown in debug logs |
+| `flags` | Regex flags: `i`, `m`, `s`, `u`, or `v` |
+| `triggerAfter` | Text or regex that must follow the cursor; it is replaced too |
+| `triggerKey` | Expand from a key binding, e.g. `Ctrl-a` or `Mod-Alt-l` |
+| `language` | Code-fence language, for `c` snippets |
+| `excludedMacros` / `excludedEnvironments` | Don't expand inside these |
+| `includedMacros` | Only expand inside these |
 
-Macro argument indexes are zero-based. A macro name written as a string matches
-its first required argument, following upstream 1.13.2. Use `{ name: "macro" }`
-to match every argument, or specify `arguments` explicitly. Matching order is descending priority,
-then descending trigger length, then source order. Give a snippet a higher priority
-when it must supersede another matching snippet in your collection.
-
-| Option | Context or behavior |
+| Option | Meaning |
 | --- | --- |
-| `t` | Text outside math |
-| `m` | Math (`n` or `M`) |
-| `n` | Inline math |
-| `M` | Display math, including configured math fences |
-| `T` | Text inside a math text macro such as `\text{}` |
-| `c` | Markdown fenced code; combine with `language` to select its info string |
-| `C` | Markdown inline code |
-| `A` | Expand automatically when the final trigger character is typed |
-| `r` | Treat a string trigger as a regular expression; a `RegExp` trigger implies it |
-| `v` | Visual snippet acting on a selection |
-| `w` | Require configured word delimiters before and after the match |
-| `U` | Skip the intermediate undo state that restores only the final trigger key |
+| `m` | In math (inline or display) |
+| `n` | In inline math |
+| `M` | In display math |
+| `t` | In text, outside math |
+| `T` | In text inside math, such as `\text{…}` |
+| `c` | In a Markdown code block (use `language` to pick one) |
+| `C` | In Markdown inline code |
+| `A` | Expand automatically, without `Tab` |
+| `r` | Treat a string trigger as a regular expression |
+| `v` | Visual: wrap the current selection |
+| `w` | Only match at word boundaries |
+| `U` | Skip the extra undo step that restores just the typed trigger |
 
-With no mode flag, the upstream catch-all mode semantics are used. Multiple mode
-flags are alternatives. Regex and visual modes are mutually exclusive.
-`triggerAfter` may be a regex only for a regex snippet.
+With no mode letter, a snippet works everywhere. Several mode letters mean
+"any of these".
 
-Replacement tabstops use upstream numbering: `$0`, `$1`, ... or
-`${1:default}`. `Tab` visits them numerically through VS Code's native snippet
-mode; repeated numbers with equal defaults are linked placeholders. A unique
-last group becomes VS Code's final cursor so the following `Tab` can immediately
-resume contextual navigation. A repeated last group stays linked and requires
-one `Tab` to leave snippet mode. VS Code cannot natively link occurrences whose
-initial defaults differ; in that rare case the first occurrence remains editable
-and the later defaults remain literal. In regex replacement strings,
-`[[0]]`, `[[1]]`, ... mean the first, second, ... capture group. JavaScript
-string escaping still applies, so a literal LaTeX backslash is written `\\`.
+**Placeholders.** `$0`, `$1`, … and `${1:default}` are tab stops, visited in
+order with `Tab`. Repeating a number links the copies so they are edited
+together.
 
-Visual snippets replace the current selection when their one-character trigger
-is typed. `${VISUAL}` contains a Markdown-normalized multiline selection;
-`${VISUAL_ORIGINAL}` preserves its original text. A visual snippet may instead
-omit `trigger` and use `triggerKey`.
+**Regex captures.** In a regex snippet's replacement, `[[0]]`, `[[1]]`, … insert
+the first, second, … capture group.
 
-Snippet-variable files export an object. Names may be written with or without
-`${...}`:
+**Visual snippets** (`v`) run when you select text and type the trigger
+character. `${VISUAL}` inserts the selection.
+
+**Matching order.** Higher `priority` first, then longer triggers, then file
+order.
+
+**Macro scopes.** In `excludedMacros` and `includedMacros`, a name like
+`"text"` refers to the macro's first argument. Use `{ name: "macro" }` for all
+arguments, or `{ name: "macro", arguments: [0, 2] }` for specific ones
+(counted from 0).
+
+### Snippet variables
+
+Variables are reusable regex fragments. A variable file exports an object:
 
 ```js
 export default {
@@ -192,21 +163,16 @@ export default {
 };
 ```
 
-They can then be interpolated in triggers, for example
-`trigger: "(${GREEK_LOWER})hat"`. Custom variables extend or replace variables
-of the same name from the bundled variable set.
+Use one in a trigger with `${GREEK_LOWER}`, for example
+`trigger: "(${GREEK_LOWER})hat"`. The bundled variables are always available,
+including with custom snippets. Your variables are added to them and override
+any with the same name.
 
-Bundled **variables** remain available with either snippet collection. Custom
-variable files override matching names and retain all other
-bundled variables. This is independent of snippet collection selection: custom
-variables alone do not replace bundled snippets, and custom snippets still receive
-bundled variables plus any custom overrides.
+### Function replacements
 
-### Programmable replacements
-
-Function replacements receive the matched string/`RegExpExecArray` (or selected
-text for a visual snippet) and a compatibility API. Return a string or a
-`BaseNode[]`; return `false` to decline the match.
+A replacement function receives the match (or the selected text, for visual
+snippets). It returns a string, an array of snippet nodes, or `false` to skip
+the match.
 
 ```js
 const ls = require("latex-suite");
@@ -218,8 +184,7 @@ module.exports = [
     replacement: (match) => {
       const n = Number(match[1]);
       const rows = Array.from({ length: n }, (_, row) =>
-        Array.from({ length: n }, (_, column) => row === column ? "1" : "0")
-          .join(" & ")
+        Array.from({ length: n }, (_, col) => (row === col ? "1" : "0")).join(" & ")
       );
       return `\\begin{pmatrix}\n${rows.join(" \\\\\n")}\n\\end{pmatrix}`;
     }
@@ -227,66 +192,60 @@ module.exports = [
   {
     trigger: /(\w)(\d)/,
     options: "mrA",
-    replacement: [
-      ls.capture_node(0),
-      ls.text_node("_{"),
-      ls.capture_node(1),
-      ls.text_node("}")
-    ]
+    replacement: [ls.capture_node(0), ls.text_node("_{"), ls.capture_node(1), ls.text_node("}")]
   }
 ];
 ```
 
-`require("latex-suite")` exposes `snippetVariables`, `tabstop_node`, `text_node`,
-`capture_node`, `snippet_node`, `array_node`, and `ALL_MACROS`. The second
-function argument supplies `adapter` and its upstream alias `view`, plus
-`options.captures`. The adapter exposes the VS Code `document` and a small
-CodeMirror-compatible read-only `state` shape; it is not a CodeMirror
-`EditorView`. Snippets that depend on Obsidian or other CodeMirror APIs may need
-porting.
+`require("latex-suite")` provides `snippetVariables`, `tabstop_node`,
+`text_node`, `capture_node`, `snippet_node`, `array_node`, and `ALL_MACROS`. The
+function's second argument includes `adapter` (also available as `view`), which
+exposes the VS Code `document` and a small read-only CodeMirror-like `state`.
+Snippets that rely on Obsidian or full CodeMirror APIs need to be adapted.
 
-#### Trust and security
+### Security
 
-Custom snippet and variable sources are executable JavaScript, not data. They
-run in the extension host without a sandbox and can load Node modules or access
-files and processes with the extension host's permissions. Only load code you
-trust and review project-level settings before trusting a workspace.
+Custom snippet and variable files are code. They run unsandboxed in the VS Code
+extension host and can read files or start processes. Only load snippets you
+trust, and check a project's `.vscode/settings.json` before trusting the
+workspace.
 
-In VS Code Restricted Mode, all inline and file-based custom snippet/variable
-sources are skipped. Bundled defaults remain available.
+In [Restricted Mode](https://code.visualstudio.com/docs/editing/workspaces/workspace-trust),
+custom snippets and variables are never loaded; the bundled set is used.
 
-Virtual workspaces support bundled and self-contained custom sources. A custom
-snippet loaded from a non-file URI cannot use relative Node.js imports such as
-`require("./helper")`; keep that snippet self-contained or use a local workspace.
+In virtual workspaces, custom snippets work but cannot `require` other files
+by relative path.
 
-## Commands and keybindings
+## Commands
 
-| Command palette title | Command ID | Default key |
-| --- | --- | --- |
-| LaTeX Suite: Expand Snippet | `latexSuite.expandSnippet` | Contextual `Tab` |
-| LaTeX Suite: Expand Snippet by Trigger Key | `latexSuite.expandSnippetByKey` | None |
-| LaTeX Suite: Contextual Tab | `latexSuite.tab` | `Tab` in enabled Markdown/LaTeX editors |
-| LaTeX Suite: Insert Auto-fraction | `latexSuite.autoFraction` | None (`/` is automatic in math) |
-| LaTeX Suite: Move to Next Bracket or Exit Equation | `latexSuite.nextBracketOrEquation` | Contextual `Tab` |
-| LaTeX Suite: Add Matrix Cell | `latexSuite.matrixCell` | Contextual `Tab` |
-| LaTeX Suite: Add Matrix Row | `latexSuite.matrixNewline` | `Enter` in a configured matrix scope |
-| LaTeX Suite: Exit Matrix | `latexSuite.matrixExit` | `Shift+Enter` in a configured matrix scope |
-| LaTeX Suite: Reload Snippets | `latexSuite.reloadSnippets` | None |
-| LaTeX Suite: Add Snippet File… | `latexSuite.addSnippetFile` | None |
-| LaTeX Suite: Add Variable File… | `latexSuite.addVariableFile` | None |
-| LaTeX Suite: Toggle Typing Shortcuts | `latexSuite.toggleEnabled` | None |
-| LaTeX Suite: Open Settings | `latexSuite.openSettings` | None |
+All commands are in the Command Palette under **LaTeX Suite**.
 
-Contextual `Tab` first leaves VS Code's native snippet mode alone. Otherwise it
-tries a manual snippet, skips an unclosed matrix delimiter, adds a matrix cell,
-visits the next configured closer, exits the equation, and finally falls back to
-the normal VS Code Tab command. The default binding is active when
-`editor.tabCompletion` is `off`; if you use VS Code's Tab Completion feature,
-bind `latexSuite.tab` explicitly where you want this workflow.
+| Command | Default key |
+| --- | --- |
+| Expand Snippet | `Tab` |
+| Expand Snippet by Trigger Key | — |
+| Insert Auto-fraction | — (`/` works automatically in math) |
+| Move to Next Bracket or Exit Equation | `Tab` |
+| Add Matrix Cell | `Tab` in a matrix |
+| Add Matrix Row | `Enter` in a matrix |
+| Exit Matrix | `Shift+Enter` in a matrix |
+| Reload Snippets | — |
+| Add Snippet File… / Add Variable File… | — |
+| Toggle Typing Shortcuts | — |
+| Open Settings | — |
 
-To bind an upstream `triggerKey`, add a VS Code keybinding and pass either a
-string command argument or an object with `triggerKey`. Without an argument the
-command prompts for a key name.
+### How `Tab` works
+
+`Tab` does the first of these that applies: move to the next snippet
+placeholder, expand a `Tab` snippet, add a matrix cell, jump past the next
+closing bracket, leave the equation, or insert a normal tab.
+
+The `Tab` binding is active only when `editor.tabCompletion` is `off` (the
+default). If you use Tab Completion, bind `latexSuite.tab` to a key yourself.
+
+### Trigger-key snippets
+
+To run a snippet that has a `triggerKey`, add a keybinding:
 
 ```json
 {
@@ -297,83 +256,62 @@ command prompts for a key name.
 }
 ```
 
-Use upstream/CodeMirror modifier spelling in `triggerKey`: `Ctrl-`, `Alt-`,
-`Shift-`, `Meta-`, or portable `Mod-` (`Meta` on macOS, `Ctrl` elsewhere).
-Space-separated chords are supported. For a non-automatic snippet with both
-`trigger` and `triggerKey`, both must match; with `A`, invoking the key ignores
-the text trigger.
+Write `triggerKey` in CodeMirror style: `Ctrl-`, `Alt-`, `Shift-`, `Meta-`, or
+`Mod-` (`Cmd` on macOS, `Ctrl` elsewhere). Space-separated key sequences work.
 
 ## Settings
 
-| Setting | Default | Purpose |
+Run **LaTeX Suite: Open Settings** to see every setting with its description.
+Settings can be set for the user, a workspace, or a single folder in a
+multi-root workspace.
+
+| Setting | Default | What it does |
 | --- | --- | --- |
-| `latexSuite.enabled` | `true` | Master switch |
-| `latexSuite.snippets.enabled` | `true` | Automatic and manual snippet expansion |
-| `latexSuite.snippets.files` | `[]` | Snippet files or directories |
-| `latexSuite.snippets.source` | `""` | Inline snippet JavaScript |
-| `latexSuite.snippets.variableFiles` | `[]` | Snippet-variable files |
-| `latexSuite.snippets.variablesSource` | `""` | Inline variable-object JavaScript |
-| `latexSuite.snippets.recursionLimit` | `0` | Extra automatic-expansion passes, `0`-`10` |
-| `latexSuite.snippets.wordDelimiters` | punctuation and whitespace | Delimiters accepted by `w`; `\\n` and `\\t` are decoded |
-| `latexSuite.snippets.removeTrailingWhitespace` | `true` | Trim replacement-end whitespace in inline math |
-| `latexSuite.forceMathLanguages` | `["math"]` | Markdown fence languages treated as display math |
-| `latexSuite.autoFraction.enabled` | `true` | Enable `/` and the auto-fraction command |
-| `latexSuite.autoFraction.symbol` | `"\\frac"` | Fraction command to insert |
-| `latexSuite.autoFraction.breakingCharacters` | `"+-=\\t"` | Extra backward-scan boundaries |
-| `latexSuite.autoFraction.excludedRegions` | `^{...}`, `\\pu{...}` | Delimited regions where auto-fraction is disabled |
-| `latexSuite.matrixShortcuts.enabled` | `true` | Matrix `Tab`/`Enter`/`Shift+Enter` behavior |
-| `latexSuite.matrixShortcuts.environments` | common matrix/align environments | Environments considered matrix-like |
-| `latexSuite.matrixShortcuts.macros` | `["eqalign"]` | Macros considered matrix-like |
-| `latexSuite.tabOut.enabled` | `true` | Bracket/equation Tab navigation |
-| `latexSuite.tabOut.closingSymbols` | common right delimiters | Delimiters visited by Tab |
-| `latexSuite.tabOut.exitEquationOnlyAtEndOfLine` | `true` | Require only whitespace before the equation end |
-| `latexSuite.bracketEnlargement.enabled` | `true` | Add `\left` and `\right` after qualifying snippet expansions |
-| `latexSuite.bracketEnlargement.triggers` | `\\sum`, `\\int`, `\\frac`, ... | Replacement substrings that qualify |
-| `latexSuite.bracketEnlargement.insertSpaces` | `true` | Add spaces inside enlarged brackets |
-| `latexSuite.debug` | `off` | `off`, `info`, or `verbose` output logging |
+| `latexSuite.enabled` | `true` | Turn all shortcuts on or off |
+| `latexSuite.snippets.enabled` | `true` | Snippet expansion |
+| `latexSuite.snippets.files` | `[]` | Your snippet files or folders |
+| `latexSuite.snippets.source` | `""` | Inline snippets |
+| `latexSuite.snippets.variableFiles` | `[]` | Your snippet variable files |
+| `latexSuite.snippets.variablesSource` | `""` | Inline snippet variables |
+| `latexSuite.snippets.recursionLimit` | `0` | Let automatic snippets expand on each other's output (up to 10 times) |
+| `latexSuite.snippets.wordDelimiters` | punctuation and whitespace | Word boundaries for the `w` option |
+| `latexSuite.snippets.removeTrailingWhitespace` | `true` | Trim trailing spaces from snippets in inline math |
+| `latexSuite.forceMathLanguages` | `["math"]` | Code-fence languages treated as math |
+| `latexSuite.autoFraction.enabled` | `true` | Auto-fraction on `/` |
+| `latexSuite.autoFraction.symbol` | `\frac` | Fraction command to insert |
+| `latexSuite.autoFraction.breakingCharacters` | `+-=` and tab | Characters that end the numerator |
+| `latexSuite.autoFraction.excludedRegions` | `^{…}`, `\pu{…}` | Where `/` stays a slash |
+| `latexSuite.matrixShortcuts.enabled` | `true` | Matrix `Tab`/`Enter`/`Shift+Enter` |
+| `latexSuite.matrixShortcuts.environments` | `pmatrix`, `align`, `cases`, … | Environments with matrix shortcuts |
+| `latexSuite.matrixShortcuts.macros` | `["eqalign"]` | Macros with matrix shortcuts |
+| `latexSuite.tabOut.enabled` | `true` | `Tab` past brackets and out of equations |
+| `latexSuite.tabOut.closingSymbols` | `)`, `]`, `}`, `\rangle`, … | Brackets `Tab` jumps past |
+| `latexSuite.tabOut.exitEquationOnlyAtEndOfLine` | `true` | Only leave an equation when nothing but whitespace remains in it |
+| `latexSuite.bracketEnlargement.enabled` | `true` | Add `\left`/`\right` automatically |
+| `latexSuite.bracketEnlargement.triggers` | `\sum`, `\int`, `\frac`, … | What triggers enlargement |
+| `latexSuite.bracketEnlargement.insertSpaces` | `true` | Pad enlarged brackets with spaces |
+| `latexSuite.debug` | `off` | Log expansions to the output channel |
 
-## Scope and limitations
+## Limitations
 
-This port intentionally omits concealed markup, hover math previews, bracket
-coloring/highlighting, and Vim integration. It does not expand simultaneously at
-multiple editor cursors or selections; commands and automatic expansion require
-one selection. Linked placeholders inside one inserted snippet remain supported.
+- Concealment, hover previews, bracket highlighting, and Vim mode from the
+  Obsidian plugin are not included.
+- Shortcuts work with one cursor only, not multiple cursors or selections.
+- Automatic expansion responds to typing one character at a time. Pasting,
+  undo/redo, and IME input may not trigger it.
+- vscode.dev and other browser-only editors are not supported.
 
-Automatic expansion observes direct, single-character typing. Paste,
-multi-character edits, undo/redo events, and IME composition may require manual
-expansion. Bracket enlargement runs after a LaTeX Suite replacement containing a
-configured trigger, not after arbitrary edits.
+## Contributing
 
-## Development
+Bug reports and pull requests are welcome on
+[GitHub](https://github.com/Nicswansonwaterloo/LatexSuiteforCode/issues). See
+the [development guide](https://github.com/Nicswansonwaterloo/LatexSuiteforCode/blob/main/DEVELOPMENT.md)
+for building and testing.
 
-See the [development guide](https://github.com/Nicswansonwaterloo/LatexSuiteforCode/blob/main/DEVELOPMENT.md)
-for the VS Code API review, engineering rules, and release checks.
+## Credits and license
 
-```sh
-# Node.js 24 (see .nvmrc)
-npm ci
-npm run test:unit
-npm test
-npm run package:vsix
-npm run check:package
-npm run test:vsix
-npm run test:trust
-```
-
-Use `npm run watch` while developing. `npm test` compiles and runs the VS Code
-integration suites; `npm run test:unit` runs the editor-independent checks.
-`npm run compile` performs type-checking, linting, and a
-development bundle; `npm run package` creates the production bundle used by
-`vscode:prepublish`. `npm run package:vsix` creates a local installable archive;
-`test:vsix` and `test:trust` install it into disposable test profiles. None of
-these commands publish the extension.
-
-## Upstream and license
-
-The snippet engine behavior is adapted from Obsidian LaTeX Suite under the MIT
-License. Bundled default snippets, variables, and the macro catalogue are based on
-[Obsidian LaTeX Suite v1.13.1](https://github.com/artisticat1/obsidian-latex-suite/tree/1.13.1);
-the macro snapshot records upstream commit `ee9f3ee`. Selected 1.13.2 scope and
-inline-environment fixes are included; port-specific differences are recorded
-in `UPSTREAM.md`. See `src/upstream/LICENSE.md` and `THIRD_PARTY_NOTICES.md`. This is an independent VS
-Code port and is not an official Obsidian LaTeX Suite release.
+Based on [Obsidian LaTeX Suite](https://github.com/artisticat1/obsidian-latex-suite)
+v1.13.1 by artisticat1, used under the MIT License. Differences from upstream
+are listed in `UPSTREAM.md`. See `LICENSE.md`, `src/upstream/LICENSE.md`, and
+`THIRD_PARTY_NOTICES.md`. This is an independent port, not an official release
+of Obsidian LaTeX Suite.

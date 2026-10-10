@@ -1,0 +1,21 @@
+\documentclass{article}
+\usepackage[paperwidth=100mm,paperheight=100mm,margin=0mm]{geometry}
+\usepackage{graphicx}
+\usepackage{type1cm}
+\usepackage{tikz}
+\pagestyle{empty}
+
+% Native OT1 Computer Modern Bold Extended (cmbx12).
+% The standard \LaTeX macro supplies the authentic logo positioning.
+% All artwork is typeset vector text on a white, square canvas.
+\begin{document}
+\null
+\begin{tikzpicture}[remember picture,overlay]
+  \node[inner sep=0pt,anchor=center] at
+    ([xshift=50mm,yshift=57.3mm]current page.south west)
+    {\resizebox{73mm}{!}{\normalfont\bfseries\fontsize{40}{40}\selectfont\LaTeX}};
+  \node[inner sep=0pt,anchor=center] at
+    ([xshift=50mm,yshift=33.5mm]current page.south west)
+    {\resizebox{43mm}{!}{\normalfont\bfseries\fontsize{35}{35}\selectfont Suite}};
+\end{tikzpicture}
+\end{document}

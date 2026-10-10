@@ -1,34 +1,25 @@
 # Upstream attribution
 
-This project ports typing and snippet behavior from
+This extension ports typing and snippet behavior from
 [Obsidian LaTeX Suite](https://github.com/artisticat1/obsidian-latex-suite),
-licensed under the MIT License in `src/upstream/LICENSE.md`.
+licensed under the MIT License (see `src/upstream/LICENSE.md`).
 
-The base snapshot is version 1.13.1, commit
-`ee9f3ee05e98e8144a56f74e8f218eda47bcccea` (2026-09-10).
-Variables and the macro catalogue retain that snapshot. Snippet nodes, matching,
-context semantics, auto-fraction, matrix, tab-out, and bracket enlargement are
-adapted implementations. VS Code owns editing, placeholders, and undo.
+The bundled snippet variables and macro catalogue come from version 1.13.1,
+commit `ee9f3ee05e98e8144a56f74e8f218eda47bcccea`. Snippet matching, context
+detection, auto-fraction, matrix shortcuts, tab-out, and bracket enlargement are
+adapted for VS Code, which handles editing, placeholders, and undo.
 
-## Review through 1.13.3 (2026-10-02)
+## Differences from upstream
 
-Reviewed the [1.13.1…1.13.3 changes](https://github.com/artisticat1/obsidian-latex-suite/compare/1.13.1...1.13.3).
-This is selective compatibility, not a claim of full 1.13.3 parity.
+Upstream changes through 1.13.3 have been reviewed. This port includes some of
+them, not all.
 
-- Adopted 1.13.2's required-argument limits for text and snippetless macros,
-  including colorbox/fcolorbox, operatorname, and style. A string macro selector
-  means argument 0; an object without `arguments` still matches every argument.
-- Adopted the inline `beg` trigger correction in `default_snippets.js`.
-- Retained this port's existing `dm` behavior. Upstream 1.13.2 reworks leading
-  newlines and blockquote handling; importing that whole change needs separate
-  native-editor indentation/navigation fixtures. Existing plain-line and list
-  behavior is covered here.
-- The port's `mk` omits Obsidian's empty groups used to avoid preview flicker.
-  This difference predates this maintenance pass; the defaults are not an
-  unchanged upstream copy.
-- Obsidian/CodeMirror rendering, concealment, file watching, and 1.13.3 Excalidraw
-  changes do not transfer directly to this extension. Browser hosts, Vim,
-  previews, and concealed markup remain outside this port's scope.
-
-Keep these differences explicit when refreshing the snapshot. Port fixes with
-independent expected outputs; do not regenerate test expectations from the code.
+- From 1.13.2: required-argument limits for text and snippetless macros
+  (including `colorbox`, `fcolorbox`, `operatorname`, and style macros), and the
+  inline `beg` trigger fix. A macro named by a string matches its first
+  argument; an object without `arguments` matches every argument.
+- `dm` keeps this port's behavior. Upstream 1.13.2 changed how leading newlines
+  and blockquotes are handled; that change is not included.
+- `mk` omits the empty groups that Obsidian inserts to avoid preview flicker.
+- Concealment, previews, file watching, Vim support, and Obsidian-specific
+  features such as Excalidraw do not apply to VS Code and are not ported.

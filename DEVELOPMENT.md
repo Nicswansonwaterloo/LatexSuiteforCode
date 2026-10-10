@@ -1,165 +1,85 @@
-# VS Code extension development review
+# Development guide
 
-Reviewed against the official VS Code Extension API guidance on 2026-09-13.
-This is a scoped engineering review, not certification of every API guideline.
+## Setup and checks
 
-| Area | Project rule and review result | Official reference |
-| --- | --- | --- |
-| Activation | Activate for Markdown and LaTeX; contributed commands activate automatically. Keep activation free of custom snippet evaluation and file reads. | [Activation events](https://code.visualstudio.com/api/references/activation-events) |
-| Lifecycle | Own registrations through disposables. Cancel pending editor waits on shutdown; reject stale operations after edits, selection changes, configuration changes, or disposal. Handle background promise failures. | [Extension anatomy](https://code.visualstudio.com/api/get-started/extension-anatomy) |
-| Workspace Trust | Execute custom JavaScript only in trusted workspaces. Keep all four executable-source settings restricted and retain bundled defaults in Restricted Mode. Invalidate caches when trust changes. | [Workspace Trust](https://code.visualstudio.com/api/extension-guides/workspace-trust) |
-| Files and configuration | Read resources through `workspace.fs`; join paths with `Uri.joinPath`. Use `fsPath` only for file URIs. Resolve configuration per document and relative paths per workspace folder. | [Virtual workspaces](https://code.visualstudio.com/api/extension-guides/virtual-workspaces) |
-| Commands and editing | Use the LaTeX Suite command category. Scope typing shortcuts with editor context keys and preserve native completion, snippet navigation, accessibility Tab mode, and undo behavior. | [Command Palette](https://code.visualstudio.com/api/ux-guidelines/command-palette) |
-| Packaging | Bundle production code with esbuild, externalize `vscode`, and ship only the runtime and public documentation/licenses. Inspect the VSIX file list after changing runtime assets. | [Bundling](https://code.visualstudio.com/api/working-with-extensions/bundling-extension) |
-| Testing | Type-check, lint, and run unit/integration tests in an isolated Extension Development Host. Check the minimum supported VS Code release and current stable before release. | [Testing extensions](https://code.visualstudio.com/api/working-with-extensions/testing-extension) |
-
-## Reproducible checks
-
-Use Node.js 24 (`.nvmrc`) and the committed npm lockfile. Packaging uses the pinned
-local `@vscode/vsce`; a global installation is unnecessary.
+Use Node.js 24 (see `.nvmrc`) and the committed lockfile.
 
 ```sh
 npm ci
-npm run test:unit
-npm test -- --code-version 1.137.0
-npm test
-npm run package:vsix
-npm run check:package
-npm run test:vsix
-npm run test:trust
-npm run benchmark
+npm run test:unit                       # editor-independent parser tests
+npm test                                # integration tests on current stable VS Code
+npm test -- --code-version 1.137.0      # integration tests on the minimum supported VS Code
+npm run package:vsix                    # build latex-suite-<version>.vsix (does not publish)
+npm run check:package                   # verify the archive contents
+npm run test:vsix                       # install the archive into a clean profile and smoke-test it
+npm run test:trust                      # same, in Restricted Mode
+npm run benchmark                       # parser timing (diagnostic only)
 npm audit
 ```
 
-`npm test` compiles tests, checks types, lints, bundles, and runs three isolated
-Extension Development Hosts: editor/core behavior, multi-root configuration,
-and controller lifecycle. Use `--label editor`, `--label configuration`, or
-`--label lifecycle` to select one. `test:unit` runs the editor-independent parse
-checks. `watch-tests` refreshes both TypeScript and bundled snippet test assets.
+Use `npm run watch` while developing, or press F5 to launch an Extension
+Development Host.
 
-`package` builds production JavaScript. `package:vsix` builds the local archive
-with the configured repository metadata; it never publishes.
-`check:package` opens that archive, checks its exact file list and current file
-contents, and verifies the bundled third-party dependency/license inventory.
-Run packaging again after edits before checking the archive. The archive ships
-only the bundle, icon, manifest, public documentation, and licenses.
+- `npm test` type-checks, lints, bundles, and runs three test hosts: editor
+  behavior, multi-root configuration, and controller lifecycle. Select one with
+  `--label editor`, `--label configuration`, or `--label lifecycle`.
+- On headless Linux, wrap test commands in `xvfb-run -a`.
+- `test:vsix` and `test:trust` default to current stable; set `VSCODE_VERSION`
+  to test another release. If they fail with `listen EINVAL` on a `.sock` path,
+  `TMPDIR` is too long for a Unix socket; rerun with a short `TMPDIR` such as
+  `/tmp`.
+- `check:package` fails if the archive contains anything beyond the bundle,
+  icon, manifest, README, and license files, or if a new runtime dependency is
+  bundled without its license notice. Repackage after every edit.
 
-`test:vsix` installs the archive into a temporary profile and loads a separate,
-empty test harness so the development checkout cannot shadow the installed code.
-`test:trust` uses another fresh profile with Workspace Trust enabled; the normal
-VS Code test runner disables trust and cannot validate Restricted Mode. These
-checks exercise activation, bundled expansion, native placeholders, Tab, and
-rapid typing. The trust check asserts the real untrusted state and verifies
-that configured custom snippets/variables did not execute. Set `VSCODE_VERSION`
-to a release such as `1.137.0` to override their default of current stable.
+CI (`.github/workflows/ci.yml`) runs the unit, integration, and package checks
+on Linux, Windows, and macOS against the minimum and stable VS Code versions,
+plus the installed and Restricted Mode smoke tests on Linux. It never publishes.
 
-Linux headless hosts need a display, for example `xvfb-run -a npm test`.
-The GitHub workflow runs minimum/stable editor suites and package checks on
-Linux, Windows, and macOS, plus installed/trust smoke checks on Linux. It does
-not publish and needs no Marketplace credentials. Hosted job results must be
-reviewed for the exact revision intended for release.
+## Engineering rules
 
-## Maintenance evidence
+| Area | Rule |
+| --- | --- |
+| Activation | Activate on Markdown and LaTeX only. Do not evaluate custom snippets or read files during activation. |
+| Lifecycle | Register everything through disposables. Cancel pending editor waits on shutdown and drop stale operations after edits, selection or configuration changes, or disposal. |
+| Workspace Trust | Run custom JavaScript only in trusted workspaces. Keep the four executable-source settings restricted, keep bundled defaults in Restricted Mode, and invalidate caches when trust changes. |
+| Files and configuration | Read through `workspace.fs` and build paths with `Uri.joinPath`; use `fsPath` only for `file:` URIs. Resolve configuration per document and relative paths per workspace folder. |
+| Editing | Scope keybindings with context keys. Preserve native completion, snippet navigation, Tab focus mode, and undo. |
+| Packaging | Bundle with esbuild, externalize `vscode`, and ship only the runtime, icon, README, and licenses. |
+| Upstream | Record intentional differences in `UPSTREAM.md`. Port fixes with independently written expected outputs; never regenerate expectations from the code. |
 
-- Local review (2026-10-02): Linux VS Code 1.137.0 and 1.140.0 each pass
-  136 host tests: 121 editor/core, 13 configuration/multi-root, and 2 lifecycle
-  tests. All 3 standalone parse
-  tests pass. Type checks (including unused locals/parameters) and lint pass.
-  The dependency audit reports zero known vulnerabilities on this date.
-- [Hosted CI on 2026-10-06](https://github.com/Nicswansonwaterloo/latexsuiteport/actions/runs/37470941158)
-  passed all six Linux/Windows/macOS × minimum/stable jobs at commit
-  `119450b6ec5bac02e735e7fb04025bfd2c51a515`, including package validation
-  and Linux installed/trust smoke tests. This is historical evidence; check
-  CI again for the exact release revision.
-- The package allowlist contains 11 ZIP entries, including VSIX metadata.
-  The development guide stays in the repository and is linked from the README;
-  it is not installed with the extension.
-- Lifecycle tests now construct and dispose a real controller in a separate
-  host. They verify command removal and cancellation of an actual pending wait.
-- Delayed non-file source tests hold `workspace.fs.readFile` until selection,
-  document, or configuration changes have completed, then verify no stale edit
-  or replacement evaluation occurs. Two real workspace folders resolve the
-  same relative path independently, including when switching back.
-- The long-form note uses explicit placeholder and contextual-navigation
-  actions. It no longer forces the caret to the end before asserting tab-out.
-  A separate burst test avoids per-character idle barriers. Command-driven
-  tests do not prove physical keyboard routing or IME behavior.
-- Source settings invalidate the cache. File saves/external changes require
-  **Reload Snippets**; there is no automatic file watcher.
-- A black LaTeX / Suite wordmark on white replaces the earlier icons. See
-  the [VS Code brand rules](https://code.visualstudio.com/brand).
-  Acorn's MIT notice ships in `THIRD_PARTY_NOTICES.md`.
+See the [VS Code extension API docs](https://code.visualstudio.com/api) when
+raising `engines.vscode` or adding capabilities. Browser-only hosts such as
+vscode.dev are not supported.
 
-## Performance boundary
+## Performance
 
-The benchmark parses 12k, 120k, and 600k-character documents and queries 100
-cursor positions per parse. A local sample measured approximately 1.5/18/97 ms
-for parsing and 0.004/0.032/0.162 ms per cached cursor query. These are diagnostic
-measurements, not a latency guarantee or CI timing threshold.
+Cursor movement reuses one parsed document revision; each edit re-parses the
+document. Unanchored regex triggers inspect at most the last 8,192 UTF-16 code
+units before the cursor. Custom JavaScript and regular expressions run
+synchronously in the extension host, so very large documents or expensive
+custom snippets can add typing latency.
 
-Cursor movement reuses one parsed document revision. Edits still snapshot and
-parse the document; very large documents and long regex candidate lines remain
-performance work. Custom JavaScript and regular expressions run synchronously
-in the extension host. Revisit incremental parsing/candidate indexing before
-claiming low typing latency in arbitrarily large documents.
+## Releasing
 
-## Remaining release gates
+1. Bump `version` in `package.json` (`npm version <x.y.z> --no-git-tag-version`).
+2. Make sure CI is green on the exact commit being released.
+3. Run the checks above, ending with `package:vsix`, `check:package`,
+   `test:vsix`, and `test:trust`.
+4. Do these manual checks, which automated tests cannot cover:
+   - physical `Tab`, `Enter`, `Shift+Enter`, and `Mod-` keybindings, undo,
+     completion popups, Tab focus mode, and IME input on Windows and macOS;
+   - granting trust to a workspace that opened in Restricted Mode;
+   - a virtual workspace and a remote extension host.
+5. Publish the checked VSIX from the
+   [Marketplace publisher page](https://marketplace.visualstudio.com/manage/publishers/),
+   or with `npx vsce publish --packagePath latex-suite-<version>.vsix`. See the
+   [publishing guide](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)
+   for authentication; prefer Microsoft Entra ID, since global Azure DevOps PATs
+   are retired on December 1, 2026. Keep credentials out of the repository.
+6. Tag the release commit.
 
-- [ ] Create a Marketplace publisher and confirm its ID. The provisional extension
-  identity is `latex-suite-port.latex-suite`; the manifest does not reserve it
-  or establish publisher ownership. If the publisher ID changes, update
-  `package.json` and identity-dependent code/tests together before packaging.
-- [ ] Confirm that the configured GitHub repository, README, and issue tracker
-  are publicly accessible. The Marketplace resource URLs are derived from the
-  configured Git remote; public availability has not been verified here.
-- [ ] Test physical Tab/Enter/Shift+Enter/Mod bindings, undo, completion popups,
-  Tab focus mode, and IME input on Windows and macOS. Automated command tests
-  cannot establish physical keyboard behavior.
-- [ ] Manually grant trust in a previously restricted workspace and confirm
-  configured sources become available without stale edits. The automated tests
-  cover Restricted Mode itself and a simulated gate transition, not this UI flow.
-- [ ] Test an actual virtual-workspace provider and remote extension host.
-  Automated URI-source coverage does not prove every provider or remote setup.
-  `Mod-` currently follows the extension host OS; cross-OS remote sessions need
-  particular attention before claiming parity.
-- [ ] Choose the release version, review Marketplace listing/identity, rebuild
-  the VSIX, rerun archive/smoke checks, and explicitly authorize publication.
-  Nothing in this maintenance pass publishes the extension.
-
-## Marketplace publication
-
-Version `1.0.3` is configured. Publication is a separate, manual step after all
-release gates above pass. The publishing account and a fresh release archive
-are still required; repository configuration alone cannot confirm readiness.
-
-1. [Create a publisher](https://marketplace.visualstudio.com/manage/publishers/)
-   using your Microsoft account. Use `latex-suite-port` only if you can create
-   or already own that publisher ID. Confirm the extension name `latex-suite`
-   and display name `LaTeX Suite` are accepted by the Marketplace.
-2. Review the listing: description, README, changelog, PNG icon, license, and
-   repository/homepage/issues links. The package targets desktop VS Code 1.137
-   or newer; development uses Node.js 24. Consumers do not install the build
-   tools separately. Browser-only VS Code is unsupported.
-3. Require successful minimum/stable GitHub Actions checks on Linux, Windows,
-   and macOS for the exact release revision. Complete the remaining
-   manual editor, trust, and remote checks above.
-4. From the exact revision intended for release, run the reproducible checks
-   above. `npm run package:vsix` creates `latex-suite-1.0.3.vsix` and builds the
-   production bundle first. `npm run check:package` validates its content;
-   `test:vsix` and `test:trust` exercise that same archive. Rebuild and recheck
-   after any changes; previously generated archives may be stale.
-5. When ready to publish, upload that checked VSIX through the publisher
-   management page. Packaging, Git commits/tags, and GitHub pushes do not
-   publish the extension. No automatic publishing workflow is configured.
-
-For future command-line or automated publishing, follow the current
-[official publishing guide](https://code.visualstudio.com/api/working-with-extensions/publishing-extension).
-Keep authentication outside the repository. Prefer Microsoft Entra ID for
-new automation; global Azure DevOps PATs retire on December 1, 2026.
-Do not use `npm publish` to publish a VS Code extension.
-
-This is a Node extension. Browser-only hosts such as vscode.dev are unsupported;
-virtual filesystem access does not imply browser support. Upstream compatibility
-and deliberately retained behavior are listed in `UPSTREAM.md`.
-
-Revisit the linked guidance when raising `engines.vscode` or adding capabilities.
+The publisher ID in `package.json` (`latex-suite-port`) must match the
+Marketplace publisher. If it changes, update every use of the extension ID
+(`latex-suite-port.latex-suite`) in `src/extension.ts` and `src/test/`, then
+repackage.
