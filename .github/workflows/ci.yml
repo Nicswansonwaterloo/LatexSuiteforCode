@@ -1,6 +1,15 @@
 name: Extension checks
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      release:
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -15,14 +24,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - run: node --test scripts/check-release.test.js
       - run: npm run test:unit
       - if: runner.os == 'Linux'
         run: xvfb-run -a npm test -- --code-version ${{ matrix.vscode }}
@@ -38,3 +48,11 @@ jobs:
         run: xvfb-run -a npm run test:trust
         env:
           VSCODE_VERSION: ${{ matrix.vscode }}
+      - name: Save the tested release package
+        if: inputs.release && matrix.os == 'ubuntu-latest' && matrix.vscode == 'stable'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: marketplace-vsix
+          path: '*.vsix'
+          if-no-files-found: error
+          retention-days: 7
